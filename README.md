@@ -9,6 +9,7 @@ A seguir estão questões dos mais variados tópicos passados no curso. O objeti
 * Se necessário, acesse o código-fonte compartilhado por ele e rode a aplicação com problema na sua máquina
 * Crie uma resposta para o aluno usando toda formalidade de um suporte, sendo educado e cordial, além de ser claro e objetivo na resposta
 * Quanto mais dúvida você responder de forma correta contará mais pontos para sua classificação.
+* Você tem 7 dias para fazer o desafio
 
 Bom trabalho!
 
