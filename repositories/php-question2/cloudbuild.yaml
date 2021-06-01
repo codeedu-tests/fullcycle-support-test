@@ -1,0 +1,49 @@
+steps:
+  - id: "Criar Arquivo service account storage json"
+    name: 'gcr.io/cloud-builders/gcloud'
+    args:
+      - kms
+      - decrypt
+      - --ciphertext-file=./code-micro-videos/backend/storage/credentials/google/service-account-storage.json.enc
+      - --plaintext-file=./code-micro-videos/backend/storage/credentials/google/service-account-storage.json
+      - --location=global
+      - --keyring=testing-build
+      - --key=service-account
+
+  - id: "Rodando docker-compose"
+    name: 'gcr.io/$PROJECT_ID/docker-compose:1.28.2'
+    args: ['-f', './code-micro-videos/docker-compose.prod.yaml', 'up', '-d']
+    env:
+      - GOOGLE_CLOUD_PROJECT_ID=$PROJECT_ID
+      - GOOGLE_CLOUD_KEY_FILE=service-account-storage.json
+      - GOOGLE_CLOUD_STORAGE_BUCKET=code-micro-videos-rfaguiar-test
+      - GOOGLE_CLOUD_STORAGE_API_URI=https://console.cloud.google.com/storage/browser/code-micro-videos-rfaguiar-test
+      - TESTING_PROD=true
+
+  - id: "Chown in /var/www"
+    name: 'gcr.io/cloud-builders/docker'
+    args: ['exec','-u','root','-t','micro-videos-app','chown','-R','www-data:www-data','/var/www']
+
+  - id: "Rodando composer"
+    name: 'gcr.io/cloud-builders/docker'
+    args: ['exec', '-t', 'micro-videos-app', 'composer', 'install', '--working-dir', './backend']
+
+  - id: "Compiando .env"
+    name: 'gcr.io/cloud-builders/docker'
+    args: ['exec', '-t', 'micro-videos-app', 'cp', './backend/.env.example', './backend/.env']
+
+  - id: "Compiando .env.testing"
+    name: 'gcr.io/cloud-builders/docker'
+    args: [ 'exec', '-t', 'micro-videos-app', 'cp', './backend/.env.testing.example', './backend/.env.testing']
+
+  - id: "Rodando key:generate"
+    name: 'gcr.io/cloud-builders/docker'
+    args: [ 'exec', '-t', 'micro-videos-app', 'php', '/var/www/backend/artisan', 'key:generate']
+
+  - id: "Rodando Migrations"
+    name: 'gcr.io/cloud-builders/docker'
+    args: [ 'exec', '-t', 'micro-videos-app', 'php', '/var/www/backend/artisan', 'migrate']
+
+  - id: "Rodando Phpunit"
+    name: 'gcr.io/cloud-builders/docker'
+    args: [ 'exec', '-t', 'micro-videos-app', 'php', '/var/www/backend/vendor/bin/phpunit', '-c', '/var/www/backend/phpunit.xml']

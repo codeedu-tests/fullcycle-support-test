@@ -1,0 +1,44 @@
+version: "3"
+
+services:
+  app:
+    image: rafaelferreti/desafio-2-node
+    container_name: app
+    entrypoint: dockerize -wait tcp://database:3306 docker-entrypoint.sh
+    networks:
+      - desafio-network
+    volumes: 
+      - /home/node/app/node_modules
+      - ./app/application:/home/node/app
+    tty: true
+    depends_on:
+      - database
+
+  database:
+    image: rafaelferreti/desafio-2-database
+    container_name: database
+    command: --innodb-use-native-aio=0
+    restart: always
+    tty: true
+    volumes:
+      - ./mysql:/var/lib/mysql
+    environment:
+      - MYSQL_DATABASE=desafio_nginx_node
+      - MYSQL_ROOT_PASSWORD=root
+    networks:
+      - desafio-network
+
+  nginx:
+    build: ./nginx
+    image: rafaelferreti/desafio-2-nginx
+    container_name: nginx
+    ports:
+      - 8080:80
+    networks:
+      - desafio-network
+    depends_on:
+      - app
+    
+networks: 
+  desafio-network:
+    driver: bridge

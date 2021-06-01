@@ -1,0 +1,18 @@
+{
+    "name": "default",
+    "type": "postgres",
+    "port": 5432,
+    "host": "localhost",
+    "username": "root",
+    "password": "123321",
+    "database": "appteste",
+    "entities": [
+        "./src/modules/**/entities/*.ts"
+    ],
+    "migrations": [
+        "./src/shared/infra/typeorm/migrations/*.ts"
+    ],
+    "cli": {
+        "migrationsDir": "./src/shared/infra/typeorm/migrations"
+    }
+}
